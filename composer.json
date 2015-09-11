@@ -16,9 +16,14 @@
     ],
     "require": {
         "php": ">=5.5",
+        "components/jquery": "~2.1",
+        "twbs/bootstrap": "~3.3",
         "zendframework/zend-diactoros": "~1.1"
     },
     "autoload": {
+        "files": [
+            "src/functions.php"
+        ],
         "psr-4": {
             "Woland\\": "src/"
         }
