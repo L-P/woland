@@ -1,0 +1,25 @@
+{
+    "name": "L-P/woland",
+    "description": "Simple read-only file browser.",
+    "type": "project",
+    "keywords": [
+        "file",
+        "browser"
+    ],
+    "license": "BSD-2-Clause",
+    "authors": [
+        {
+            "name": "Léo Peltier",
+            "email": "contact@leo-peltier.fr",
+            "homepage": "https://leo-peltier.fr"
+        }
+    ],
+    "require": {
+        "php": ">=5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Woland\\": "src/"
+        }
+    }
+}
