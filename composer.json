@@ -16,6 +16,7 @@
     ],
     "require": {
         "php": ">=5.5",
+        "twbs/bootstrap": "~3.3",
         "zendframework/zend-diactoros": "~1.1"
     },
     "autoload": {
