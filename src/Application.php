@@ -25,16 +25,121 @@ class Application
             throw new \RuntimeException('$favorites can\'t be empty, you need at least one path.');
         }
 
+        if (array_key_exists('_', $favorites)) {
+            throw new \RuntimeException("'_' is a reserved favorite name.");
+        }
+
         $this->favorites = array_map('realpath', $favorites);
     }
 
     public function __invoke(RequestInterface $request)
     {
-        header('Content-Type: text/plain; charset=UTF-8');
         $path = $request->getUri()->getPath();
 
-        echo "Requested path: $path\n";
-        echo "Favorites:\n";
-        var_export($this->favorites);
+        if ($path === '/_' || strpos($path, '/_/') === 0) {
+            $this->renderAsset($path);
+            return;
+        }
+
+        $current = null;
+        $parts = explode('/', $path);
+        $currentFavorite = (count($parts) > 1) ? $parts[1] : null;
+
+        $this->renderHtml('layout.php', [
+            'layout' => (object) [
+                'title' => 'Woland - ' . $path,
+                'css'   => $this->getCss(),
+                'js'    => $this->getJs(),
+            ],
+            'favorites' => $this->favorites,
+            'currentFavorite' => $currentFavorite,
+        ]);
+    }
+
+    /**
+     * Output the contents of the given asset with the proper MIME.
+     *
+     * Since every request will go through the app we also need to serve
+     * static files.
+     * TODO: To be removed when file rendering with MIME handling is
+     * implemented. Assets would just be another favorite and the only special
+     * case would be not showing the link in the navbar.
+     *
+     * @param string $path
+     */
+    private function renderAsset($path)
+    {
+        $parts = explode('/', $path);
+        $asset = $this->getPublicDir() . '/' . implode('/', array_slice($parts, 2));
+
+        if (count($parts) < 4 || !file_exists($asset)) {
+            http_response_code(404);
+            throw new \RuntimeException("Asset not found `$asset`.");
+        }
+
+        $type = $parts[2];
+        if (!in_array($type, ['css', 'js'], true)) {
+            throw new \RuntimeException("Invalid asset type  `$type`.");
+        }
+
+        $mime = [
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+        ][$type];
+
+        header("Content-Type: $mime");
+        header('Cache-control: max-age=86400'); // one day
+
+        readfile($asset);
+    }
+
+    /// @return string
+    private function getTemplatesDir()
+    {
+        return __DIR__ . '/templates';
+    }
+
+    /// @return string
+    private function getPublicDir()
+    {
+        return realpath(__DIR__ . '/../public');
+    }
+
+    /// @return string[] CSS files to include.
+    private function getCss()
+    {
+        return [
+            '/_/css/woland.css',
+            '/_/css/bootstrap.min.css',
+            '/_/css/bootstrap-theme.min.css',
+        ];
+    }
+
+    /// @return string[] JS files to include.
+    private function getJs()
+    {
+        return [
+            '/_/js/jquery.min.js',
+            '/_/js/bootstrap.min.js',
+        ];
+    }
+
+    /**
+     * @param string $template file name in template dir.
+     * @param mixed[] array to extract before including the template.
+     */
+    private function renderHtml($template, array $data = [])
+    {
+        // Render template out of object context.
+        $render = function($template) use ($data) {
+            // I'd rather crash than silently EXTR_SKIP.
+            if (array_key_exists('template', $data)) {
+                throw new \LogicException('Template data array can\'t have a \'template\' key.');
+            }
+
+            extract($data);
+            require $template;
+        };
+        $render($this->getTemplatesDir() . "/$template", $data);
     }
 }
