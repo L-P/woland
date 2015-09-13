@@ -52,10 +52,28 @@ class Application
             'layout' => (object) [
                 'css'   => $this->getCss(),
                 'js'    => $this->getJs(),
+                'title' => $this->getTitle($path),
             ],
+
+            'sidebar'   => new Sidebar($path),
             'favorites' => $this->favorites,
-            'path' => $path,
+            'path'      => $path,
         ]);
+    }
+
+    /// @return string
+    private function getTitle(RequestedPath $path)
+    {
+        if ($path->isNone()) {
+            $title = _('index');
+        } else {
+            $title = $path->favoriteName;
+            if (strlen($path->path) > 0) {
+                $title .= ' - ' . $path->path;
+            }
+        }
+
+        return "Woland - $title";
     }
 
     /**
@@ -132,18 +150,6 @@ class Application
      */
     private function renderHtml($template, array $data = [])
     {
-        // Render template out of object context.
-        $render = function($template) use ($data) {
-            // I'd rather crash than silently EXTR_SKIP.
-            if (array_key_exists('template', $data)) {
-                throw new \LogicException('Template data array can\'t have a \'template\' key.');
-            }
-
-            extract($data);
-            require $template;
-        };
-
-        header('Content-Type: text/html; charset=UTF-8');
-        $render($this->getTemplatesDir() . "/$template", $data);
+        render_template($this->getTemplatesDir() . "/$template", $data);
     }
 }

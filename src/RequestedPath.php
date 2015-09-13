@@ -10,7 +10,10 @@ class RequestedPath
     use \lpeltier\Struct;
 
     /// @var string favorite name.
-    public $favorite;
+    public $favoriteName;
+
+    /// @var string favorite name.
+    public $favoritePathname;
 
     /// @var string path relative to the favorite.
     public $path;
@@ -26,7 +29,7 @@ class RequestedPath
     {
         $uriPath = $request->getUri()->getPath();
         $parts = array_values(array_filter(explode('/', $uriPath), 'strlen'));
-        $favorite = (count($parts) > 0) ? $parts[0] : null;
+        $favoriteName = (count($parts) > 0) ? $parts[0] : null;
         $path = implode('/', array_slice($parts, 1));
 
         /* This should never happen has the browser resolves relative URIs by
@@ -36,19 +39,21 @@ class RequestedPath
             throw new \RuntimeException("`$uriPath` is not a valid path.");
         }
 
-        if ($favorite === null) {
+        if ($favoriteName === null) {
             return new self();
-        } else if (!array_key_exists($favorite, $favorites)) {
-            throw new \RuntimeException('Unknown favorite.');
+        } else if (!array_key_exists($favoriteName, $favorites)) {
+            throw new \RuntimeException("Unknown favorite `$favoriteName`.");
         }
 
-        $info = new \SplFileInfo($favorites[$favorite] . "/$path");
-        return new self(compact('favorite', 'info', 'path'));
+        $info = new \SplFileInfo($favorites[$favoriteName] . "/$path");
+        $favoritePathname = $favorites[$favoriteName];
+
+        return new self(compact('favoriteName', 'favoritePathname', 'info', 'path', 'prefix'));
     }
 
     /// @return true if the requested path is the app index.
     public function isNone()
     {
-        return $this->favorite === null;
+        return $this->favoriteName === null;
     }
 }
