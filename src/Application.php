@@ -48,6 +48,17 @@ class Application
             throw $e;
         }
 
+        if (!$path->isNone() && !$path->info->isDir()) {
+            header('Content-Type: ' . mime_content_type($path->info->getPathname()));
+            header('Content-Length: ' . $path->info->getSize());
+            header('Cache-control: max-age=3600');
+
+            $this->disableOutputBuffering();
+            readfile($path->info->getPathname());
+
+            return;
+        }
+
         $this->renderHtml('layout.php', [
             'layout' => (object) [
                 'css'   => $this->getCss(),
@@ -55,10 +66,20 @@ class Application
                 'title' => $this->getTitle($path),
             ],
 
+            'files'     => $this->getFilesIterator($path),
+            'navbar'    => array_keys($this->favorites),
             'sidebar'   => new Sidebar($path),
-            'favorites' => $this->favorites,
             'path'      => $path,
         ]);
+    }
+
+    private function getFilesIterator(RequestedPath $path)
+    {
+        if ($path->isNone()) {
+            return new \ArrayIterator();
+        }
+
+        return new \GlobIterator($path->info->getPathname() . '/*');
     }
 
     /// @return string
@@ -151,5 +172,12 @@ class Application
     private function renderHtml($template, array $data = [])
     {
         render_template($this->getTemplatesDir() . "/$template", $data);
+    }
+
+    private function disableOutputBuffering()
+    {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
     }
 }

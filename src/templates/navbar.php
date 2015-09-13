@@ -11,8 +11,8 @@
     <div class="collapse navbar-collapse" id="js-navbar-collapse">
         <ul class="nav navbar-nav">
         <?php
-        ksort($favorites);
-        foreach (array_keys($favorites) as $name) {
+        sort($navbar);
+        foreach ($navbar as $name) {
             if ($path->favoriteName === $name) {
                 eprintf(
                     '<li class="active"><a href="%1$s">%1$s'

@@ -28,13 +28,8 @@ class Sidebar
      * @param string $pathname
      * @return mixed[] [SplFileInfo, [...]]
      */
-    private function pathnameToNestedArray($pathname, $level = 0)
+    private function pathnameToNestedArray($pathname)
     {
-        // HACK hard-coded max depth.
-        if ($level > 1) {
-            return [];
-        }
-
         $ret = [];
 
         foreach (new \GlobIterator("$pathname/*") as $file) {
@@ -44,7 +39,7 @@ class Sidebar
 
             $ret[] = [
                 $file,
-                $this->pathnameToNestedArray($file->getPathname(), $level + 1)
+                $this->pathnameToNestedArray($file->getPathname())
             ];
         }
 

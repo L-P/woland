@@ -5,11 +5,13 @@ function displayNestedArray(array $array, $path)
 {
     echo '<ul>';
     foreach ($array as $value) {
-        eprintf(
-            '<li><a href="%s">%s</a>',
-            file_to_uri($value[0], $path),
-            $value[0]->getBasename()
-        );
+        if ($path->info->getPathname() == $value[0]->getPathname()) {
+            $uri = file_to_uri($value[0], $path);
+            eprintf('<a href="%s" class="bg-info">%s</a>', $uri, $value[0]->getBasename());
+        } else {
+            echo file_to_link($value[0], $path);
+        }
+
         if (count($value[1] > 0)) {
             displayNestedArray($value[1], $path);
         }

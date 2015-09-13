@@ -27,7 +27,7 @@ class RequestedPath
      */
     public static function fromRequest(RequestInterface $request, array $favorites)
     {
-        $uriPath = $request->getUri()->getPath();
+        $uriPath = urldecode($request->getUri()->getPath());
         $parts = array_values(array_filter(explode('/', $uriPath), 'strlen'));
         $favoriteName = (count($parts) > 0) ? $parts[0] : null;
         $path = implode('/', array_slice($parts, 1));

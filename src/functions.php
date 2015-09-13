@@ -47,7 +47,19 @@ function file_to_uri(\SplFileInfo $file, \Woland\RequestedPath $path)
     }
 
     $relative = substr($file->getPathname(), strlen($path->favoritePathname));
-    return sprintf('/%s%s', $path->favoriteName, $relative);
+    $encodedRelative = implode('/', array_map('urlencode', explode('/', $relative)));
+
+    $uri = sprintf('/%s%s', $path->favoriteName, $encodedRelative);
+    return $uri . ($file->isDir() ? '/' : '');
+}
+
+function file_to_link(\SplFileInfo $file, \Woland\RequestedPath $path)
+{
+    return esprintf(
+        '<a href="%s">%s</a>',
+        file_to_uri($file, $path),
+        $file->getBasename()
+    );
 }
 
 function render_template($template, $data)
