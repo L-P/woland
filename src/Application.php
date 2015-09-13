@@ -50,7 +50,6 @@ class Application
 
         $this->renderHtml('layout.php', [
             'layout' => (object) [
-                'title' => 'Woland - ' . $path->path,
                 'css'   => $this->getCss(),
                 'js'    => $this->getJs(),
             ],

@@ -46,9 +46,7 @@ class RequestedPath
         return new self(compact('favorite', 'info', 'path'));
     }
 
-    /**
-     * @return true if the requested path is the app index.
-     */
+    /// @return true if the requested path is the app index.
     public function isNone()
     {
         return $this->favorite === null;
