@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1888011dd4ea2bfa05d5917c59a45311",
+    "hash": "e3bf532e731c4858a2e51085f57c9013",
     "packages": [
         {
             "name": "components/jquery",
@@ -47,6 +47,46 @@
             "description": "jQuery JavaScript Library",
             "homepage": "http://jquery.com",
             "time": "2015-05-08 05:04:47"
+        },
+        {
+            "name": "lpeltier/struct",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/L-P/struct.git",
+                "reference": "f0e01fac17b70a8ffb074e3ad00c8a8ca5531867"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/L-P/struct/zipball/f0e01fac17b70a8ffb074e3ad00c8a8ca5531867",
+                "reference": "f0e01fac17b70a8ffb074e3ad00c8a8ca5531867",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 5.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "lpeltier\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Léo Peltier",
+                    "email": "contact@leo-peltier.fr",
+                    "homepage": "https://leo-peltier.fr",
+                    "role": "developer"
+                }
+            ],
+            "time": "2015-07-15 14:20:16"
         },
         {
             "name": "psr/http-message",

@@ -39,3 +39,37 @@ function eprintf($str)
         )
     );
 }
+
+function file_to_uri(\SplFileInfo $file, \Woland\RequestedPath $path)
+{
+    if (strpos($file->getPathname(), $path->favoritePathname . '/') !== 0) {
+        throw new \RuntimeException('Unknown path.');
+    }
+
+    $relative = substr($file->getPathname(), strlen($path->favoritePathname));
+    $encodedRelative = implode('/', array_map('urlencode', explode('/', $relative)));
+
+    $uri = sprintf('/%s%s', $path->favoriteName, $encodedRelative);
+    return $uri . ($file->isDir() ? '/' : '');
+}
+
+function file_to_link(\SplFileInfo $file, \Woland\RequestedPath $path)
+{
+    return esprintf(
+        '<a href="%s">%s</a>',
+        file_to_uri($file, $path),
+        $file->getBasename()
+    );
+}
+
+function render_template($template, $data)
+{
+    // I'd rather crash than silently EXTR_SKIP.
+    if (array_key_exists('template', $data)) {
+        throw new \LogicException('Template data array can\'t have a \'template\' key.');
+    }
+
+    extract($data);
+    header('Content-Type: text/html; charset=UTF-8');
+    require $template;
+}

@@ -34,26 +34,67 @@ class Application
 
     public function __invoke(RequestInterface $request)
     {
+        /// TODO: remove. Temporary solution to display assets.
         $path = $request->getUri()->getPath();
-
         if ($path === '/_' || strpos($path, '/_/') === 0) {
             $this->renderAsset($path);
             return;
         }
 
-        $current = null;
-        $parts = explode('/', $path);
-        $currentFavorite = (count($parts) > 1) ? $parts[1] : null;
+        try {
+            $path = RequestedPath::fromRequest($request, $this->favorites);
+        } catch (\RuntimeException $e) {
+            http_response_code(404);
+            throw $e;
+        }
+
+        if (!$path->isNone() && !$path->info->isDir()) {
+            header('Content-Type: ' . mime_content_type($path->info->getPathname()));
+            header('Content-Length: ' . $path->info->getSize());
+            header('Cache-control: max-age=3600');
+
+            $this->disableOutputBuffering();
+            readfile($path->info->getPathname());
+
+            return;
+        }
 
         $this->renderHtml('layout.php', [
             'layout' => (object) [
-                'title' => 'Woland - ' . $path,
                 'css'   => $this->getCss(),
                 'js'    => $this->getJs(),
+                'title' => $this->getTitle($path),
             ],
-            'favorites' => $this->favorites,
-            'currentFavorite' => $currentFavorite,
+
+            'files'     => $this->getFilesIterator($path),
+            'navbar'    => array_keys($this->favorites),
+            'sidebar'   => new Sidebar($path),
+            'path'      => $path,
         ]);
+    }
+
+    private function getFilesIterator(RequestedPath $path)
+    {
+        if ($path->isNone()) {
+            return new \ArrayIterator();
+        }
+
+        return new \GlobIterator($path->info->getPathname() . '/*');
+    }
+
+    /// @return string
+    private function getTitle(RequestedPath $path)
+    {
+        if ($path->isNone()) {
+            $title = _('index');
+        } else {
+            $title = $path->favoriteName;
+            if (strlen($path->path) > 0) {
+                $title .= ' - ' . $path->path;
+            }
+        }
+
+        return "Woland - $title";
     }
 
     /**
@@ -130,16 +171,13 @@ class Application
      */
     private function renderHtml($template, array $data = [])
     {
-        // Render template out of object context.
-        $render = function($template) use ($data) {
-            // I'd rather crash than silently EXTR_SKIP.
-            if (array_key_exists('template', $data)) {
-                throw new \LogicException('Template data array can\'t have a \'template\' key.');
-            }
+        render_template($this->getTemplatesDir() . "/$template", $data);
+    }
 
-            extract($data);
-            require $template;
-        };
-        $render($this->getTemplatesDir() . "/$template", $data);
+    private function disableOutputBuffering()
+    {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
     }
 }
