@@ -34,25 +34,28 @@ class Application
 
     public function __invoke(RequestInterface $request)
     {
+        /// TODO: remove. Temporary solution to display assets.
         $path = $request->getUri()->getPath();
-
         if ($path === '/_' || strpos($path, '/_/') === 0) {
             $this->renderAsset($path);
             return;
         }
 
-        $current = null;
-        $parts = explode('/', $path);
-        $currentFavorite = (count($parts) > 1) ? $parts[1] : null;
+        try {
+            $path = RequestedPath::fromRequest($request, $this->favorites);
+        } catch (\RuntimeException $e) {
+            http_response_code(404);
+            throw $e;
+        }
 
         $this->renderHtml('layout.php', [
             'layout' => (object) [
-                'title' => 'Woland - ' . $path,
+                'title' => 'Woland - ' . $path->path,
                 'css'   => $this->getCss(),
                 'js'    => $this->getJs(),
             ],
             'favorites' => $this->favorites,
-            'currentFavorite' => $currentFavorite,
+            'path' => $path,
         ]);
     }
 
@@ -140,6 +143,8 @@ class Application
             extract($data);
             require $template;
         };
+
+        header('Content-Type: text/html; charset=UTF-8');
         $render($this->getTemplatesDir() . "/$template", $data);
     }
 }

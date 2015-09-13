@@ -13,7 +13,7 @@
             <ul class="nav navbar-nav">
             <?php
             foreach(array_keys($favorites) as $name) {
-                if ($currentFavorite === $name) {
+                if ($path->favorite === $name) {
                     eprintf(
                         '<li class="active"><a href="%1$s">%1$s'
                         . '<span class="sr-only">'
