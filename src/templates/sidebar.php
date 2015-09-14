@@ -38,9 +38,9 @@ function displayNestedArray(array $array, $path)
             </div>
         </div>
     <?php else: ?>
-        <?php if (strlen($path->path) && $partial = $sidebar->getPartialTree()): ?>
+        <?php if (strlen($path->relative) && $partial = $sidebar->getPartialTree()): ?>
         <div class="panel panel-default">
-            <div class="panel-heading"><?= e($path->path) ?></div>
+            <div class="panel-heading"><?= e($path->relative) ?></div>
             <div class="panel-body">
                 <?php displayNestedArray($partial, $path); ?>
             </div>

@@ -6,7 +6,7 @@
         </tr>
     </thead>
     <tbody>
-        <?php if(strlen($path->path)): ?>
+        <?php if(strlen($path->relative)): ?>
         <tr>
             <td><a href="./../">..</a></td>
             <td></td>

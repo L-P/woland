@@ -89,8 +89,8 @@ class Application
             $title = _('index');
         } else {
             $title = $path->favoriteName;
-            if (strlen($path->path) > 0) {
-                $title .= ' - ' . $path->path;
+            if (strlen($path->relative) > 0) {
+                $title .= ' - ' . $path->relative;
             }
         }
 
