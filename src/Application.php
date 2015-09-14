@@ -66,11 +66,32 @@ class Application
                 'title' => $this->getTitle($path),
             ],
 
+            'view'      => $this->getMainView($path),
             'favorites' => array_keys($this->favorites),
             'files'     => $this->getFilesIterator($path),
             'path'      => $path,
             'sidebar'   => new Sidebar($path, $this->favorites),
         ]);
+    }
+
+    /**
+     * @return string full path the the 'main' view. The main view is the part
+     * where the files are listed and displayed.
+     */
+    private function getMainView(RequestedPath $path)
+    {
+        $view = null;
+
+        switch(true) {
+        case $path->isNone():
+            $view = 'none';
+            break;
+        default:
+            $view = 'list';
+        }
+
+        assert('$view !== null');
+        return $this->getTemplatesDir() . "/main/$view.php";
     }
 
     private function getFilesIterator(RequestedPath $path)
