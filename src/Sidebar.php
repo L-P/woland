@@ -26,6 +26,8 @@ class Sidebar
     }
 
     /**
+     * Return the subtree of the current dir inside the tree of parent folders.
+     *
      * @return mixed[] [SplFileInfo, [...]]
      */
     public function getPartialTree()
@@ -35,7 +37,20 @@ class Sidebar
             throw new \RuntimeException('No valid path for tree.');
         }
 
-        return $this->pathnameToNestedArray($this->path->info->getPathname(), 3);
+        $ret = $this->pathnameToNestedArray($this->path->info->getPathname(), 3);
+        $curPath = $this->path->info->getPathname();
+        $ret = [new \SplFileInfo($curPath), $ret];
+
+        // HACK: I don't trust this loop.
+        while ($curPath !== $this->path->favoritePathname) {
+            $curPath = dirname($curPath);
+            $ret = [
+                new \SplFileInfo($curPath),
+                [$ret]
+            ];
+        }
+
+        return [$ret];
     }
 
     /**
