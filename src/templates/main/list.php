@@ -15,9 +15,7 @@ $totalSize = 0;
         <tbody>
             <?php if(!$path->isFavoriteRoot()): ?>
             <tr>
-                <td><a href="./../">..</a></td>
-                <td></td>
-                <td></td>
+                <td colspan="4"><a href="./../">..</a></td>
             </tr>
             <?php endif; ?>
             <?php foreach ($files as $file): ?>

@@ -34,7 +34,6 @@ class Application
 
     public function __invoke(RequestInterface $request)
     {
-        /// TODO: remove. Temporary solution to display assets.
         $path = $request->getUri()->getPath();
         if ($path === '/_' || strpos($path, '/_/') === 0) {
             $this->renderAsset($path);
@@ -131,9 +130,6 @@ class Application
      *
      * Since every request will go through the app we also need to serve
      * static files.
-     * TODO: To be removed when file rendering with MIME handling is
-     * implemented. Assets would just be another favorite and the only special
-     * case would be not showing the link in the navbar.
      *
      * @param string $path
      */
