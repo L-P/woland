@@ -49,16 +49,24 @@ class Application
         }
 
         if (!$path->isNone() && !$path->info->isDir()) {
-            header('Content-Type: ' . mime_content_type($path->info->getPathname()));
-            header('Content-Length: ' . $path->info->getSize());
-            header('Cache-control: max-age=3600');
-
-            $this->disableOutputBuffering();
-            readfile($path->info->getPathname());
-
-            return;
+            $this->renderSingleFile($request, $path);
+        } else {
+            $this->renderDir($request, $path);
         }
+    }
 
+    private function renderSingleFile(RequestInterface $request, RequestedPath $path)
+    {
+        header('Content-Type: ' . mime_content_type($path->info->getPathname()));
+        header('Content-Length: ' . $path->info->getSize());
+        header('Cache-control: max-age=3600');
+
+        $this->disableOutputBuffering();
+        readfile($path->info->getPathname());
+    }
+
+    private function renderDir(RequestInterface $request, RequestedPath $path)
+    {
         $this->renderHtml('layout.php', [
             'layout' => (object) [
                 'css'   => $this->getCss(),

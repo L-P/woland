@@ -15,7 +15,7 @@
         foreach ($favorites as $name) {
             if ($path->favoriteName === $name) {
                 eprintf(
-                    '<li class="active"><a href="%1$s">%1$s'
+                    '<li class="active"><a href="/%1$s">%1$s'
                     . '<span class="sr-only">'
                     . _('(current)')
                     . '</span></a></li>',
