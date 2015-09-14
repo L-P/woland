@@ -46,11 +46,13 @@ function displayNestedArray(array $array, $path)
             </div>
         </div>
         <?php endif; ?>
+        <?php if ($full = $sidebar->getFullTree()): ?>
         <div class="panel panel-default">
             <div class="panel-heading"><?= e($path->favoriteName) ?></div>
             <div class="panel-body">
-                <?php displayNestedArray($sidebar->getFullTree(), $path); ?>
+                <?php displayNestedArray($full, $path); ?>
             </div>
         </div>
+        <?php endif; ?>
     <?php endif; ?>
 </nav>
