@@ -1,4 +1,3 @@
-<nav class="col-md-3 col-md-pull-9 sidebar">
 <?php
 
 function displayNestedArray(array $array, $path)
@@ -19,11 +18,12 @@ function displayNestedArray(array $array, $path)
     }
     echo '</ul>';
 }
-
-displayNestedArray(
-    $sidebar->getNestedArray(),
-    $path
-);
-
 ?>
+
+<nav class="col-md-3 col-md-pull-9">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <?php displayNestedArray($sidebar->getNestedArray(), $path); ?>
+        </div>
+    </div>
 </nav>
