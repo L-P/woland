@@ -93,3 +93,8 @@ function bytes_to_human_readable($bytes)
 
     return $size . ' ' . $units[$index];
 }
+
+function format_date($time)
+{
+    return date('Y-m-d H:i:s P', $time);
+}
