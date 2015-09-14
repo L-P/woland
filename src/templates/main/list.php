@@ -7,6 +7,7 @@ $totalSize = 0;
         <thead>
             <tr>
                 <th><?= _('Name') ?></th>
+                <th><?= _('Type') ?></th>
                 <th><?= _('Size') ?></th>
                 <th><?= _('Modified') ?></th>
             </tr>
@@ -23,6 +24,7 @@ $totalSize = 0;
             <?php $totalSize += $file->getSize() ?>
             <tr>
                 <td><?= file_to_link($file, $path) ?></td>
+                <td><?= e(_($file->getType())) ?></td>
                 <td><?= e(bytes_to_human_readable($file->getSize())) ?></td>
                 <td><?= e(format_date($file->getMTime())) ?></td>
             </tr>
