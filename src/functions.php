@@ -76,3 +76,20 @@ function render_template($template, $data)
     header('Content-Type: text/html; charset=UTF-8');
     require $template;
 }
+
+/**
+ * @param string $bytes
+ * @return string
+ */
+function bytes_to_human_readable($bytes)
+{
+    $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+
+    if ($bytes === 0)
+        return '0 B';
+
+    $index = min(count($units) -1, floor(log($bytes, 1024)));
+    $size = round($bytes / pow(1024, $index), 2);
+
+    return $size . ' ' . $units[$index];
+}

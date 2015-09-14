@@ -17,7 +17,7 @@
             <?php foreach ($files as $file): ?>
             <tr>
                 <td><?= file_to_link($file, $path) ?></td>
-                <td><?= e($file->getSize()) ?></td>
+                <td><?= e(bytes_to_human_readable($file->getSize())) ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
