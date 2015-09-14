@@ -4,6 +4,7 @@ namespace Woland;
 
 use \Psr\Http\Message\RequestInterface;
 
+/// Process and render requests. See __invoke for entry point.
 class Application
 {
     /**
@@ -54,6 +55,13 @@ class Application
         }
     }
 
+    /**
+     * Output a single file.
+     *
+     * No verification is made here, if the path exists, it will be sent.
+     * The caller is responsible for checking that the user is allowed to
+     * display the file.
+     */
     private function renderSingleFile(RequestInterface $request, RequestedPath $path)
     {
         header('Content-Type: ' . mime_content_type($path->info->getPathname()));
@@ -64,6 +72,7 @@ class Application
         readfile($path->info->getPathname());
     }
 
+    /// Render a dir listing.
     private function renderDir(RequestInterface $request, RequestedPath $path)
     {
         $this->renderHtml('layout.php', [
@@ -101,6 +110,11 @@ class Application
         return $this->getTemplatesDir() . "/main/$view.php";
     }
 
+    /**
+     * Return an iterator of the files to display in the main view.
+     *
+     * @return Iterator<SplFileInfo>
+     */
     private function getFilesIterator(RequestedPath $path)
     {
         if ($path->isNone()) {
@@ -110,7 +124,7 @@ class Application
         return new \GlobIterator($path->info->getPathname() . '/*');
     }
 
-    /// @return string
+    /// @return string for the <title>
     private function getTitle(RequestedPath $path)
     {
         if ($path->isNone()) {

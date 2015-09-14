@@ -40,6 +40,11 @@ function eprintf($str)
     );
 }
 
+/**
+ * Get absolute URI from a SplFileInfo.
+ *
+ * @return string
+ */
 function file_to_uri(\SplFileInfo $file, \Woland\RequestedPath $path)
 {
     if (
@@ -56,6 +61,11 @@ function file_to_uri(\SplFileInfo $file, \Woland\RequestedPath $path)
     return $uri . ($file->isDir() ? '/' : '');
 }
 
+/**
+ * Create an HTML link from a SplFileInfo.
+ *
+ * @return string
+ */
 function file_to_link(\SplFileInfo $file, \Woland\RequestedPath $path)
 {
     return esprintf(
@@ -65,6 +75,12 @@ function file_to_link(\SplFileInfo $file, \Woland\RequestedPath $path)
     );
 }
 
+/**
+ * Output a template.
+ *
+ * @param string $template full path to template file.
+ * @param mixed[] array to extract before including the template.
+ */
 function render_template($template, $data)
 {
     // I'd rather crash than silently EXTR_SKIP.
@@ -78,7 +94,9 @@ function render_template($template, $data)
 }
 
 /**
- * @param string $bytes
+ * eg. 1024 => "1 KiB"
+ *
+ * @param int $bytes
  * @return string
  */
 function bytes_to_human_readable($bytes)
@@ -94,6 +112,10 @@ function bytes_to_human_readable($bytes)
     return $size . ' ' . $units[$index];
 }
 
+/**
+ * @param int $time timestamp.
+ * @return string
+ */
 function format_date($time)
 {
     return date('Y-m-d H:i:s P', $time);
