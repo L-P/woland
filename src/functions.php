@@ -42,7 +42,10 @@ function eprintf($str)
 
 function file_to_uri(\SplFileInfo $file, \Woland\RequestedPath $path)
 {
-    if (strpos($file->getPathname(), $path->favoritePathname . '/') !== 0) {
+    if (
+        strpos($file->getPathname(), $path->favoritePathname . '/') !== 0
+        && $file->getPathname() !== $path->favoritePathname
+    ) {
         throw new \RuntimeException('Unknown path.');
     }
 

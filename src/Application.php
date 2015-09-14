@@ -66,11 +66,32 @@ class Application
                 'title' => $this->getTitle($path),
             ],
 
+            'view'      => $this->getMainView($path),
+            'favorites' => array_keys($this->favorites),
             'files'     => $this->getFilesIterator($path),
-            'navbar'    => array_keys($this->favorites),
-            'sidebar'   => new Sidebar($path),
             'path'      => $path,
+            'sidebar'   => new Sidebar($path, $this->favorites),
         ]);
+    }
+
+    /**
+     * @return string full path the the 'main' view. The main view is the part
+     * where the files are listed and displayed.
+     */
+    private function getMainView(RequestedPath $path)
+    {
+        $view = null;
+
+        switch(true) {
+        case $path->isNone():
+            $view = 'none';
+            break;
+        default:
+            $view = 'list';
+        }
+
+        assert('$view !== null');
+        return $this->getTemplatesDir() . "/main/$view.php";
     }
 
     private function getFilesIterator(RequestedPath $path)
@@ -89,8 +110,8 @@ class Application
             $title = _('index');
         } else {
             $title = $path->favoriteName;
-            if (strlen($path->path) > 0) {
-                $title .= ' - ' . $path->path;
+            if (!$path->isFavoriteRoot()) {
+                $title .= ' - ' . $path->relative;
             }
         }
 
@@ -152,7 +173,6 @@ class Application
         return [
             '/_/css/woland.css',
             '/_/css/bootstrap.min.css',
-            '/_/css/bootstrap-theme.min.css',
         ];
     }
 

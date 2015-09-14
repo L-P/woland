@@ -16,7 +16,7 @@ class RequestedPath
     public $favoritePathname;
 
     /// @var string path relative to the favorite.
-    public $path;
+    public $relative;
 
     /// @var \SplFileInfo
     public $info;
@@ -30,7 +30,7 @@ class RequestedPath
         $uriPath = urldecode($request->getUri()->getPath());
         $parts = array_values(array_filter(explode('/', $uriPath), 'strlen'));
         $favoriteName = (count($parts) > 0) ? $parts[0] : null;
-        $path = implode('/', array_slice($parts, 1));
+        $relative = implode('/', array_slice($parts, 1));
 
         /* This should never happen has the browser resolves relative URIs by
          * itself but it is still possible to write the GET request and send
@@ -45,15 +45,21 @@ class RequestedPath
             throw new \RuntimeException("Unknown favorite `$favoriteName`.");
         }
 
-        $info = new \SplFileInfo($favorites[$favoriteName] . "/$path");
+        $info = new \SplFileInfo($favorites[$favoriteName] . "/$relative");
         $favoritePathname = $favorites[$favoriteName];
 
-        return new self(compact('favoriteName', 'favoritePathname', 'info', 'path', 'prefix'));
+        return new self(compact('favoriteName', 'favoritePathname', 'info', 'relative', 'prefix'));
     }
 
-    /// @return true if the requested path is the app index.
+    /// @return bool true if the requested path is the app index.
     public function isNone()
     {
         return $this->favoriteName === null;
+    }
+
+    /// @return bool if the requested path is the root of a favorite.
+    public function isFavoriteRoot()
+    {
+        return !$this->isNone() && strlen($this->relative) <= 0;
     }
 }
