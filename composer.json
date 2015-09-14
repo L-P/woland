@@ -1,7 +1,8 @@
 {
-    "name": "L-P/woland",
+    "name": "lpeltier/woland",
     "description": "Simple read-only file browser.",
     "type": "project",
+    "homepage": "https://github.com/L-P/woland",
     "keywords": [
         "file",
         "browser"
