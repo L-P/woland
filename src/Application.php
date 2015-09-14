@@ -66,10 +66,10 @@ class Application
                 'title' => $this->getTitle($path),
             ],
 
+            'favorites' => array_keys($this->favorites),
             'files'     => $this->getFilesIterator($path),
-            'navbar'    => array_keys($this->favorites),
-            'sidebar'   => new Sidebar($path),
             'path'      => $path,
+            'sidebar'   => new Sidebar($path, $this->favorites),
         ]);
     }
 

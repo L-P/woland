@@ -4,7 +4,10 @@ function displayNestedArray(array $array, $path)
 {
     echo '<ul>';
     foreach ($array as $value) {
-        if ($path->info->getPathname() == $value[0]->getPathname()) {
+        if (
+            !$path->isNone()
+            && $path->info->getPathname() == $value[0]->getPathname()
+        ) {
             $uri = file_to_uri($value[0], $path);
             eprintf('<a href="%s" class="bg-info">%s</a>', $uri, $value[0]->getBasename());
         } else {
@@ -21,9 +24,33 @@ function displayNestedArray(array $array, $path)
 ?>
 
 <nav class="col-md-3 col-md-pull-9">
-    <div class="panel panel-default">
-        <div class="panel-body">
-            <?php displayNestedArray($sidebar->getNestedArray(), $path); ?>
+    <?php if ($path->isNone()): ?>
+        <div class="panel panel-default">
+            <div class="panel-heading"><?= _('Favorites') ?></div>
+            <div class="panel-body">
+                <ul>
+                <?php
+                foreach($favorites as $name) {
+                    eprintf('<li><a href="/%1$s/">%1$s</a></li>', $name);
+                }
+                ?>
+                </ul>
+            </div>
         </div>
-    </div>
+    <?php else: ?>
+        <?php if (strlen($path->path) && $partial = $sidebar->getPartialTree()): ?>
+        <div class="panel panel-default">
+            <div class="panel-heading"><?= e($path->path) ?></div>
+            <div class="panel-body">
+                <?php displayNestedArray($partial, $path); ?>
+            </div>
+        </div>
+        <?php endif; ?>
+        <div class="panel panel-default">
+            <div class="panel-heading"><?= e($path->favoriteName) ?></div>
+            <div class="panel-body">
+                <?php displayNestedArray($sidebar->getFullTree(), $path); ?>
+            </div>
+        </div>
+    <?php endif; ?>
 </nav>
