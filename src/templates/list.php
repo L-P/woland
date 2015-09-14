@@ -6,7 +6,7 @@
         </tr>
     </thead>
     <tbody>
-        <?php if(strlen($path->relative)): ?>
+        <?php if(!$path->isFavoriteRoot()): ?>
         <tr>
             <td><a href="./../">..</a></td>
             <td></td>

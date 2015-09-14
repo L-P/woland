@@ -51,9 +51,15 @@ class RequestedPath
         return new self(compact('favoriteName', 'favoritePathname', 'info', 'relative', 'prefix'));
     }
 
-    /// @return true if the requested path is the app index.
+    /// @return bool true if the requested path is the app index.
     public function isNone()
     {
         return $this->favoriteName === null;
+    }
+
+    /// @return bool if the requested path is the root of a favorite.
+    public function isFavoriteRoot()
+    {
+        return !$this->isNone() && strlen($this->relative) <= 0;
     }
 }
