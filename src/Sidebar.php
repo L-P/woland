@@ -37,11 +37,14 @@ class Sidebar
             throw new \RuntimeException('No valid path for tree.');
         }
 
-        $ret = $this->pathnameToNestedArray($this->path->info->getPathname(), 3);
+        // Current dir subdirs at depth 3.
         $curPath = $this->path->info->getPathname();
-        $ret = [new \SplFileInfo($curPath), $ret];
+        $ret = [
+            new \SplFileInfo($curPath),
+            $this->pathnameToNestedArray($curPath, 3)
+        ];
 
-        // HACK: I don't trust this loop.
+        // All parent dirs with no depth.
         while ($curPath !== $this->path->favoritePathname) {
             $curPath = dirname($curPath);
             $ret = [
