@@ -32,7 +32,7 @@ class RequestedPath
         $favoriteName = (count($parts) > 0) ? $parts[0] : null;
         $relative = implode('/', array_slice($parts, 1));
 
-        /* This should never happen has the browser resolves relative URIs by
+        /* This should never happen as the browser resolves relative URIs by
          * itself but it is still possible to write the GET request and send
          * it manually. A real user won't ever see this message. */
         if (in_array('..', $parts, true)) {
