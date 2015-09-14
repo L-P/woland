@@ -152,7 +152,6 @@ class Application
         return [
             '/_/css/woland.css',
             '/_/css/bootstrap.min.css',
-            '/_/css/bootstrap-theme.min.css',
         ];
     }
 
