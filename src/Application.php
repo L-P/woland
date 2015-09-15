@@ -176,7 +176,12 @@ class Application
         }
 
         arsort($mimes);
-        $mimeMajority = key($mimes) ?: null;
+        $mimeMajority = null;
+        $first = current($mimes);
+        if (count($mimes) > 0 && $first > (array_sum($mimes) - $first)) {
+            $mimeMajority = key($mimes);
+        }
+
         if ($mimeMajority !== null && strpos($mimeMajority, '/')) { // sic strpos
             return explode('/', $mimeMajority)[0];
         } else {
