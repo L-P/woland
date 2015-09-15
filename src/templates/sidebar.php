@@ -1,6 +1,8 @@
 <?php
 
-function displayNestedArray(array $array, $path)
+use Woland\RequestedPath;
+
+function displayNestedArray(array $array, RequestedPath $path)
 {
     echo '<ul>';
     foreach ($array as $value) {
@@ -21,6 +23,18 @@ function displayNestedArray(array $array, $path)
     }
     echo '</ul>';
 }
+
+function getAlbumArtUri(Iterator $files, RequestedPath $path)
+{
+    foreach ($files as $file) {
+        if (strpos($file->getBasename(), 'cover.') === 0) {
+            return file_to_uri($file, $path);
+        }
+    }
+
+    return null;
+}
+
 ?>
 
 <nav class="col-md-3 col-md-pull-9">
@@ -30,7 +44,7 @@ function displayNestedArray(array $array, $path)
             <div class="panel-body">
                 <ul>
                 <?php
-                foreach($favorites as $name) {
+                foreach ($favorites as $name) {
                     eprintf('<li><a href="/%1$s/">%1$s</a></li>', $name);
                 }
                 ?>
@@ -45,6 +59,22 @@ function displayNestedArray(array $array, $path)
                 <?php displayNestedArray($partial, $path); ?>
             </div>
         </div>
+        <?php endif; ?>
+        <?php if ($typeMajority === 'audio'): ?>
+            <div class="panel panel-default">
+                <div class="panel-heading"><?= _('Album') ?></div>
+                <div class="panel-body">
+                <?php
+                    if ($art = getAlbumArtUri($files, $path)) {
+                        eprintf('<p><img src="%s" class="album-art" alt="Album art." /></p>', $art);
+                    }
+                    echo '<p><a href="?view=playlist">',
+                        _('Download playlist.'),
+                        '</a></p>'
+                    ;
+                ?>
+                </div>
+            </div>
         <?php endif; ?>
         <?php if ($full = $sidebar->getFullTree()): ?>
         <div class="panel panel-default">

@@ -2,3 +2,21 @@
 {
     text-align: right;
 }
+
+.album-art {
+    max-height: 250px;
+    max-width: 250px;
+    margin: auto;
+    height: auto;
+}
+
+.gallery .thumbnail {
+    width: 210px;
+    height: 210px;
+    float: left;
+}
+
+.gallery-footer {
+    clear: both;
+    text-align: right;
+}
