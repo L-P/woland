@@ -9,3 +9,14 @@
     margin: auto;
     height: auto;
 }
+
+.gallery .thumbnail {
+    width: 210px;
+    height: 210px;
+    float: left;
+}
+
+.gallery-footer {
+    clear: both;
+    text-align: right;
+}

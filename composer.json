@@ -17,6 +17,7 @@
     ],
     "require": {
         "php": ">=5.5",
+        "ext-imagick": ">=3.1",
         "components/jquery": "~2.1",
         "lpeltier/struct": "~1.0",
         "twbs/bootstrap": "~3.3",

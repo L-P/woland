@@ -50,7 +50,11 @@ class Application
         }
 
         if (!$path->isNone() && !$path->info->isDir()) {
-            $this->renderSingleFile($request, $path);
+            if (array_get($request->getQueryParams(), 'thumbnail') !== null) {
+                $this->renderThumbnail($path);
+            } else {
+                $this->renderSingleFile($path);
+            }
         } else {
             $view = array_get($request->getQueryParams(), 'view');
             if ($view === 'playlist') {
@@ -59,6 +63,33 @@ class Application
                 $this->renderDir($path);
             }
         }
+    }
+
+    private function renderThumbnail(RequestedPath $path)
+    {
+        $cache = new Cache();
+        $thumb = $cache->get($path->info->getPathname());
+        if ($thumb === null) {
+            $thumb = $this->createThumbnail($path->info->getPathname());
+            $cache->set($path->info->getPathname(), $thumb);
+        }
+
+        header('Content-Type: image/jpeg');
+        header('Content-Size: ' . strlen($thumb));
+        echo $thumb;
+    }
+
+    /**
+     * @param string $pathname
+     * @return string binary
+     */
+    private function createThumbnail($pathname)
+    {
+        $image = new \Imagick($pathname);
+        $image->thumbnailImage(200, 200, true);
+        image_autorotate($image);
+        $image->stripImage();
+        return $image->getImageBlob();
     }
 
     private function renderPlaylist(RequestedPath $path, UriInterface $uri)
@@ -83,7 +114,7 @@ class Application
      * The caller is responsible for checking that the user is allowed to
      * display the file.
      */
-    private function renderSingleFile(RequestInterface $request, RequestedPath $path)
+    private function renderSingleFile(RequestedPath $path)
     {
         header('Content-Type: ' . mime_content_type($path->info->getPathname()));
         header('Content-Length: ' . $path->info->getSize());
@@ -126,6 +157,8 @@ class Application
 
         if ($path->isNone()) {
             $view = 'none';
+        } else if ($typeMajority === 'image') {
+            $view = 'gallery';
         }
 
         return $this->getTemplatesDir() . "/main/$view.php";
