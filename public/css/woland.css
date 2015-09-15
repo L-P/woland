@@ -2,3 +2,10 @@
 {
     text-align: right;
 }
+
+.album-art {
+    max-height: 250px;
+    max-width: 250px;
+    margin: auto;
+    height: auto;
+}

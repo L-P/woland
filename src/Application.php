@@ -3,6 +3,7 @@
 namespace Woland;
 
 use \Psr\Http\Message\RequestInterface;
+use \Psr\Http\Message\UriInterface;
 
 /// Process and render requests. See __invoke for entry point.
 class Application
@@ -51,8 +52,28 @@ class Application
         if (!$path->isNone() && !$path->info->isDir()) {
             $this->renderSingleFile($request, $path);
         } else {
-            $this->renderDir($request, $path);
+            $view = array_get($request->getQueryParams(), 'view');
+            if ($view === 'playlist') {
+                $this->renderPlaylist($path, $request->getUri());
+            } else {
+                $this->renderDir($path);
+            }
         }
+    }
+
+    private function renderPlaylist(RequestedPath $path, UriInterface $uri)
+    {
+        $files = $this->getFilesIterator($path);
+        $baseUrl = sprintf(
+            '%s://%s:%d',
+            $uri->getScheme(),
+            $uri->getHost(),
+            $uri->getPort()
+        );
+
+        header('Content-Type: application/x-mpegurl; charset=UTF-8');
+        header('Cache-control: max-age=3600');
+        require $this->getTemplatesDir() . '/playlist.php';
     }
 
     /**
@@ -73,8 +94,11 @@ class Application
     }
 
     /// Render a dir listing.
-    private function renderDir(RequestInterface $request, RequestedPath $path)
+    private function renderDir(RequestedPath $path)
     {
+        $files = $this->getFilesIterator($path);
+        $typeMajority = $this->getTypeMajority($files);
+
         $this->renderHtml('layout.php', [
             'layout' => (object) [
                 'css'   => $this->getCss(),
@@ -82,32 +106,49 @@ class Application
                 'title' => $this->getTitle($path),
             ],
 
-            'view'      => $this->getMainView($path),
-            'favorites' => array_keys($this->favorites),
-            'files'     => $this->getFilesIterator($path),
-            'path'      => $path,
-            'sidebar'   => new Sidebar($path, $this->favorites),
+            'typeMajority' => $typeMajority,
+            'view'         => $this->getMainView($path, $typeMajority),
+            'favorites'    => array_keys($this->favorites),
+            'files'        => $files,
+            'path'         => $path,
+            'sidebar'      => new Sidebar($path, $this->favorites),
         ]);
     }
 
     /**
+     * @param string|null $typeMajority
      * @return string full path the the 'main' view. The main view is the part
      * where the files are listed and displayed.
      */
-    private function getMainView(RequestedPath $path)
+    private function getMainView(RequestedPath $path, $typeMajority)
     {
-        $view = null;
+        $view = 'list';
 
-        switch(true) {
-        case $path->isNone():
+        if ($path->isNone()) {
             $view = 'none';
-            break;
-        default:
-            $view = 'list';
         }
 
-        assert('$view !== null');
         return $this->getTemplatesDir() . "/main/$view.php";
+    }
+
+    /**
+     * @return string|null MIME type (eg. audio, image)
+     */
+    private function getTypeMajority(\Iterator $files)
+    {
+        $mimes = [];
+        foreach ($files as $file) {
+            $mime = get_mime($file->getPathname());
+            $mimes[$mime] = array_get($mimes, $mime, 0) + 1;
+        }
+
+        arsort($mimes);
+        $mimeMajority = key($mimes) ?: null;
+        if ($mimeMajority !== null && strpos($mimeMajority, '/')) { // sic strpos
+            return explode('/', $mimeMajority)[0];
+        } else {
+            return null;
+        }
     }
 
     /**

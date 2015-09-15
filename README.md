@@ -41,7 +41,6 @@ Running Woland
 Planned features
 ----------------
 * Single _.phar_ file.
-* Embed media files.
 * Auto-detect best view mode from mime types.
 * Authentication. (requires state)
 * Thumbnails. (requires state)

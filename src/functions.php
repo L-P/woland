@@ -120,3 +120,28 @@ function format_date($time)
 {
     return date('Y-m-d H:i:s P', $time);
 }
+
+/// No coalesce operator in 5.5.
+function array_get(array $array, $key, $default = null)
+{
+    return array_key_exists($key, $array) ? $array[$key] : $default;
+}
+
+/**
+ * @param string $pathname
+ * @return string
+ */
+function get_mime($pathname)
+{
+    static $finfo = null;
+    if ($finfo === null) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    }
+
+    $translate = [
+        'application/ogg' => 'audio/ogg',
+    ];
+
+    $mime = finfo_file($finfo, $pathname);
+    return array_get($translate, $mime, $mime);
+}
