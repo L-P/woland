@@ -16,12 +16,9 @@ class Controller
     /// @var \Woland\Cache
     protected $cache;
 
-    protected $favorites;
-
     public function __construct(\Slim\App $app)
     {
         $this->app = $app;
-        $this->favorites = $app->settings['favorites'];
         $this->cache = new Cache();
     }
 
@@ -66,7 +63,10 @@ class Controller
         $params
     ) {
         try {
-            $path = RequestedPath::fromRequest($request, $this->favorites);
+            $path = RequestedPath::fromRequest(
+                $request,
+                $this->app->settings['favorites']
+            );
         } catch (\RuntimeException $e) {
             http_response_code(404);
             throw $e;
@@ -88,6 +88,7 @@ class Controller
         }
     }
 
+    /// @return ResponseInterface
     private function renderThumbnail(ResponseInterface $response, RequestedPath $path)
     {
         $thumb = $this->cache->get($path->info->getPathname());
@@ -119,6 +120,7 @@ class Controller
         return $image->getImageBlob();
     }
 
+    /// @return ResponseInterface
     private function renderPlaylist(ResponseInterface $response, RequestedPath $path, UriInterface $uri)
     {
         $files = $this->getFilesIterator($path);
@@ -129,10 +131,18 @@ class Controller
             $uri->getPort()
         );
 
+        $lines = ['#EXTM3U'];
+        $twigExt = $this->app->view->getEnvironment()->getExtension('woland');
+        foreach ($files as $file) {
+            if (strpos(get_mime($file->getPathname()), 'audio/') === 0) {
+                $name = substr($file->getBasename(), 0, -strlen($file->getExtension()) - 1);
+                $lines[] = "#EXTINF:0,$name";
+                $lines[] = "$baseUrl/" . $twigExt->fileToUri($file, $path);
+            }
+        }
+
         $body = new Stream('php://temp', 'wb+');
-        ob_start();
-        require $this->getTemplatesDir() . '/playlist.php';
-        $body->write(ob_get_clean());
+        $body->write(implode("\n", $lines));
 
         return $response
             ->withHeader('Content-Type', 'application/x-mpegurl; charset=UTF-8')
@@ -144,6 +154,8 @@ class Controller
     /**
      * Output a single file.
      *
+     * @return ResponseInterface
+     *
      * No verification is made here, if the path exists, it will be sent.
      * The caller is responsible for checking that the user is allowed to
      * display the file.
@@ -151,50 +163,52 @@ class Controller
     private function renderSingleFile(ResponseInterface $response, RequestedPath $path)
     {
         return $response
-            ->withHeader('Content-Type', mime_content_type($path->info->getPathname()))
+            ->withHeader('Content-Type', get_mime($path->info->getPathname()))
             ->withHeader('Cache-control', 'max-age=3600')
             ->withBody(new Stream($path->info->getPathname()))
         ;
     }
 
-    /// Render a dir listing.
+    /// @return ResponseInterface
     private function renderDir(ResponseInterface $response, RequestedPath $path)
     {
         $files = $this->getFilesIterator($path);
         $typeMajority = $this->getTypeMajority($files);
+        $view = $this->getMainView($path, $typeMajority);
+        $totalSize = iterator_reduce($files, function ($carry, $item) {
+            return $carry + $item->getSize();
+        }, 0);
 
-        return $this->renderHtml($response, 'layout.php', [
-            'layout' => (object) [
+        return $this->renderHtml($response, $view, [
+            'layout' => [
                 'css'   => $this->getCss(),
                 'js'    => $this->getJs(),
                 'title' => $this->getTitle($path),
             ],
 
             'typeMajority' => $typeMajority,
-            'view'         => $this->getMainView($path, $typeMajority),
-            'favorites'    => array_keys($this->favorites),
+            'favorites'    => array_keys($this->app->settings['favorites']),
             'files'        => $files,
+            'totalSize'    => $totalSize,
             'path'         => $path,
-            'sidebar'      => new Sidebar($path, $this->favorites),
+            'sidebar'      => new Sidebar($path, $this->app->settings['favorites']),
         ]);
     }
 
     /**
      * @param string|null $typeMajority
-     * @return string full path the the 'main' view. The main view is the part
-     * where the files are listed and displayed.
+     * @return string
      */
     private function getMainView(RequestedPath $path, $typeMajority)
     {
-        $view = 'list';
-
-        if ($path->isNone()) {
-            $view = 'none';
-        } else if ($typeMajority === 'image') {
-            $view = 'gallery';
+        switch (true) {
+        case $path->isNone():
+            return 'main/none.html';
+        case $typeMajority === 'image':
+            return 'main/gallery.html';
+        default:
+            return 'main/list.html';
         }
-
-        return $this->getTemplatesDir() . "/main/$view.php";
     }
 
     /**
@@ -251,40 +265,6 @@ class Controller
         return "Woland - $title";
     }
 
-    /**
-     * Output the contents of the given asset with the proper MIME.
-     *
-     * Since every request will go through the app we also need to serve
-     * static files.
-     *
-     * @param string $path
-     */
-    private function renderAsset($path)
-    {
-        $parts = explode('/', $path);
-        $asset = $this->getPublicDir() . '/' . implode('/', array_slice($parts, 2));
-
-        if (count($parts) < 4 || !file_exists($asset)) {
-            http_response_code(404);
-            throw new \RuntimeException("Asset not found `$asset`.");
-        }
-
-        $type = $parts[2];
-        if (!in_array($type, ['css', 'js'], true)) {
-            throw new \RuntimeException("Invalid asset type  `$type`.");
-        }
-
-        $mime = [
-            'css' => 'text/css',
-            'js' => 'application/javascript',
-        ][$type];
-
-        header("Content-Type: $mime");
-        header('Cache-control: max-age=86400'); // one day
-
-        readfile($asset);
-    }
-
     /// @return string
     private function getTemplatesDir()
     {
@@ -318,13 +298,10 @@ class Controller
     /**
      * @param string $template file name in template dir.
      * @param mixed[] array to extract before including the template.
+     * @return ResponseInterface
      */
     private function renderHtml(ResponseInterface $response, $template, array $data = [])
     {
-        ob_start();
-        render_template($this->getTemplatesDir() . "/$template", $data);
-        $body = ob_get_clean();
-
-        return new HtmlResponse($body);
+        return $this->app->view->render($response, $template, $data);
     }
 }

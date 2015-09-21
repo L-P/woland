@@ -1,0 +1,48 @@
+{% if path.isNone() %}
+    <div class="panel panel-default">
+        <div class="panel-heading">Favorites</div>
+        <div class="panel-body">
+            <ul>
+                {% for favorite in favorites %}
+                    <li>
+                        <a href="/{{favorite}}/">{{favorite}}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% else %}
+    {% set partial = sidebar.getPartialTree() %}
+    {% if (not path.isFavoriteRoot()) and partial %}
+        <div class="panel panel-default">
+            <div class="panel-heading">{{ path.relative }}</div>
+            <div class="panel-body">
+                {{ displayNestedArray(partial, path) }}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if typeMajority == 'audio' %}
+        <div class="panel panel-default">
+            <div class="panel-heading">Album</div>
+            <div class="panel-body">
+                {% set art = albumArtUri(files, path) %}
+                {% if art %}
+                    <p><img src="{{art}}" class="album-art" alt="Album art." /></p>
+                {% endif %}
+
+                <p><a href="?view=playlist">Download playlist.</a></p>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set full = sidebar.getFullTree() %}
+    {% if full %}
+        <div class="panel panel-default">
+            <div class="panel-heading">{{ path.favoriteName }}</div>
+            <div class="panel-body">
+                {{ displayNestedArray(full, path) }}
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
