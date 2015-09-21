@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+{% block main %}
+
+<div class="panel panel-default">
+    <table class="table table-condensed table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Modified</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if not path.isFavoriteRoot() %}
+                <tr>
+                    <td colspan="4"><a href="./../">..</a></td>
+                </tr>
+            {% endif %}
+
+            {% for file in files %}
+                <tr>
+                    <td>{{ fileToLink(file, path) }}</td>
+                    <td>{{ file.getType() }}</td>
+                    <td>{{ file.getSize()|bytes }}</td>
+                    <td>{{ file.getMTime()|date }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="panel-body">
+        {{ files|length }} items, {{ totalSize|bytes }}
+    </p>
+</div>
+
+{% endblock %}

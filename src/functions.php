@@ -1,9 +1,4 @@
 <?php
-/**
- * Aliases mostly used in templates.
- * This is supposed to be a quick and dirty project so I did not bother using
- * a template engine other than PHP.
- */
 
 /**
  * Partial htmlentities.
@@ -41,93 +36,20 @@ function eprintf($str)
 }
 
 /**
- * Get absolute URI from a SplFileInfo.
+ * Coalesce function for arrays because 5.5 does not have ??.
  *
- * @return string
+ * @param mixed[] $array
+ * @param mixed $key
+ * @param mixed $default
  */
-function file_to_uri(\SplFileInfo $file, \Woland\RequestedPath $path)
-{
-    if (
-        strpos($file->getPathname(), $path->favoritePathname . '/') !== 0
-        && $file->getPathname() !== $path->favoritePathname
-    ) {
-        throw new \RuntimeException('Unknown path.');
-    }
-
-    $relative = substr($file->getPathname(), strlen($path->favoritePathname));
-    $encodedRelative = implode('/', array_map('urlencode', explode('/', $relative)));
-
-    $uri = sprintf('/%s%s', $path->favoriteName, $encodedRelative);
-    return $uri . ($file->isDir() ? '/' : '');
-}
-
-/**
- * Create an HTML link from a SplFileInfo.
- *
- * @return string
- */
-function file_to_link(\SplFileInfo $file, \Woland\RequestedPath $path)
-{
-    return esprintf(
-        '<a href="%s">%s</a>',
-        file_to_uri($file, $path),
-        $file->getBasename()
-    );
-}
-
-/**
- * Output a template.
- *
- * @param string $template full path to template file.
- * @param mixed[] array to extract before including the template.
- */
-function render_template($template, $data)
-{
-    // I'd rather crash than silently EXTR_SKIP.
-    if (array_key_exists('template', $data)) {
-        throw new \LogicException('Template data array can\'t have a \'template\' key.');
-    }
-
-    extract($data);
-    header('Content-Type: text/html; charset=UTF-8');
-    require $template;
-}
-
-/**
- * eg. 1024 => "1 KiB"
- *
- * @param int $bytes
- * @return string
- */
-function bytes_to_human_readable($bytes)
-{
-    $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-
-    if ($bytes === 0)
-        return '0 B';
-
-    $index = min(count($units) -1, floor(log($bytes, 1024)));
-    $size = round($bytes / pow(1024, $index), 2);
-
-    return $size . ' ' . $units[$index];
-}
-
-/**
- * @param int $time timestamp.
- * @return string
- */
-function format_date($time)
-{
-    return date('Y-m-d H:i:s P', $time);
-}
-
-/// No coalesce operator in 5.5.
 function array_get(array $array, $key, $default = null)
 {
     return array_key_exists($key, $array) ? $array[$key] : $default;
 }
 
 /**
+ * Wrap finfo_* and fix a MIME name.
+ *
  * @param string $pathname
  * @return string
  */
@@ -147,7 +69,11 @@ function get_mime($pathname)
 }
 
 
-/// http://stackoverflow.com/a/31943940
+/**
+ * Rotate an Imagick image using its JPEG orientation.
+ *
+ * http://stackoverflow.com/a/31943940
+ */
 function image_autorotate(\Imagick $image)
 {
     switch ($image->getImageOrientation()) {
@@ -182,4 +108,14 @@ function image_autorotate(\Imagick $image)
     }
 
     $image->setImageOrientation(\Imagick::ORIENTATION_TOPLEFT);
+}
+
+/// array_reduce for iterators.
+function iterator_reduce(\Iterator $iterator, callable $func, $initial = null)
+{
+    $carry = $initial;
+    foreach ($iterator as $item) {
+        $carry = $func($carry, $item);
+    }
+    return $carry;
 }
