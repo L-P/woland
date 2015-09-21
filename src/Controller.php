@@ -2,46 +2,69 @@
 
 namespace Woland;
 
-use \Psr\Http\Message\RequestInterface;
-use \Psr\Http\Message\UriInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
+use Zend\Diactoros\Stream;
+use Zend\Diactoros\Response\HtmlResponse;
 
-/// Process and render requests. See __invoke for entry point.
-class Application
+class Controller
 {
-    /**
-     * @var string[] paths to display in the initial view. Those are also the
-     * only paths you will be able to access through the app.
-     *
-     * ["name" => "path",]
-     *
-     * The key is displayed as the favorite name.
-     */
-    private $favorites;
+    /// @var \Slim\App;
+    protected $app;
 
-    /**
-     * @param string[] $favorites @see $this->favorites.
-     */
-    public function __construct(array $favorites)
+    /// @var \Woland\Cache
+    protected $cache;
+
+    protected $favorites;
+
+    public function __construct(\Slim\App $app)
     {
-        if (count($favorites) < 1) {
-            throw new \RuntimeException('$favorites can\'t be empty, you need at least one path.');
-        }
-
-        if (array_key_exists('_', $favorites)) {
-            throw new \RuntimeException("'_' is a reserved favorite name.");
-        }
-
-        $this->favorites = array_map('realpath', $favorites);
+        $this->app = $app;
+        $this->favorites = $app->settings['favorites'];
+        $this->cache = new Cache();
     }
 
-    public function __invoke(RequestInterface $request)
-    {
-        $path = $request->getUri()->getPath();
-        if ($path === '/_' || strpos($path, '/_/') === 0) {
-            $this->renderAsset($path);
-            return;
+    /// @return ResponseInterface
+    public function serveAsset(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $params
+    ) {
+        $path = sprintf(
+            '%s/%s/%s',
+            $this->getPublicDir(),
+            $params['type'],
+            $params['asset']
+        );
+
+        if (!in_array($params['type'], ['css', 'js'], true)) {
+            throw new \RuntimeException("Invalid asset type  `{$params['type']}`.");
         }
 
+        if (!file_exists($path)) {
+            http_response_code(404);
+            throw new \RuntimeException("Asset not found `$path`.");
+        }
+
+        $mime = [
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+        ][$params['type']];
+
+        return $response
+            ->withHeader('Content-Type', $mime)
+            ->withHeader('Cache-Control', 'max-age=86400')
+            ->withBody(new Stream($path))
+        ;
+    }
+
+    /// @return ResponseInterface
+    public function servePath(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $params
+    ) {
         try {
             $path = RequestedPath::fromRequest($request, $this->favorites);
         } catch (\RuntimeException $e) {
@@ -51,32 +74,36 @@ class Application
 
         if (!$path->isNone() && !$path->info->isDir()) {
             if (array_get($request->getQueryParams(), 'thumbnail') !== null) {
-                $this->renderThumbnail($path);
+                return $this->renderThumbnail($response, $path);
             } else {
-                $this->renderSingleFile($path);
+                return $this->renderSingleFile($response, $path);
             }
         } else {
             $view = array_get($request->getQueryParams(), 'view');
             if ($view === 'playlist') {
-                $this->renderPlaylist($path, $request->getUri());
+                return $this->renderPlaylist($response, $path, $request->getUri());
             } else {
-                $this->renderDir($path);
+                return $this->renderDir($response, $path);
             }
         }
     }
 
-    private function renderThumbnail(RequestedPath $path)
+    private function renderThumbnail(ResponseInterface $response, RequestedPath $path)
     {
-        $cache = new Cache();
-        $thumb = $cache->get($path->info->getPathname());
+        $thumb = $this->cache->get($path->info->getPathname());
         if ($thumb === null) {
             $thumb = $this->createThumbnail($path->info->getPathname());
-            $cache->set($path->info->getPathname(), $thumb);
+            $this->cache->set($path->info->getPathname(), $thumb);
         }
 
-        header('Content-Type: image/jpeg');
-        header('Content-Size: ' . strlen($thumb));
-        echo $thumb;
+        $body = new Stream('php://temp', 'wb+');
+        $body->write($thumb);
+
+        return $response
+            ->withHeader('Content-Type', 'image/jpeg')
+            ->withHeader('Content-Size', strlen($thumb))
+            ->withBody($body)
+        ;
     }
 
     /**
@@ -92,7 +119,7 @@ class Application
         return $image->getImageBlob();
     }
 
-    private function renderPlaylist(RequestedPath $path, UriInterface $uri)
+    private function renderPlaylist(ResponseInterface $response, RequestedPath $path, UriInterface $uri)
     {
         $files = $this->getFilesIterator($path);
         $baseUrl = sprintf(
@@ -102,9 +129,16 @@ class Application
             $uri->getPort()
         );
 
-        header('Content-Type: application/x-mpegurl; charset=UTF-8');
-        header('Cache-control: max-age=3600');
+        $body = new Stream('php://temp', 'wb+');
+        ob_start();
         require $this->getTemplatesDir() . '/playlist.php';
+        $body->write(ob_get_clean());
+
+        return $response
+            ->withHeader('Content-Type', 'application/x-mpegurl; charset=UTF-8')
+            ->withHeader('Cache-Control', 'max-age=3600')
+            ->withBody($body)
+        ;
     }
 
     /**
@@ -114,23 +148,22 @@ class Application
      * The caller is responsible for checking that the user is allowed to
      * display the file.
      */
-    private function renderSingleFile(RequestedPath $path)
+    private function renderSingleFile(ResponseInterface $response, RequestedPath $path)
     {
-        header('Content-Type: ' . mime_content_type($path->info->getPathname()));
-        header('Content-Length: ' . $path->info->getSize());
-        header('Cache-control: max-age=3600');
-
-        $this->disableOutputBuffering();
-        readfile($path->info->getPathname());
+        return $response
+            ->withHeader('Content-Type', mime_content_type($path->info->getPathname()))
+            ->withHeader('Cache-control', 'max-age=3600')
+            ->withBody(new Stream($path->info->getPathname()))
+        ;
     }
 
     /// Render a dir listing.
-    private function renderDir(RequestedPath $path)
+    private function renderDir(ResponseInterface $response, RequestedPath $path)
     {
         $files = $this->getFilesIterator($path);
         $typeMajority = $this->getTypeMajority($files);
 
-        $this->renderHtml('layout.php', [
+        return $this->renderHtml($response, 'layout.php', [
             'layout' => (object) [
                 'css'   => $this->getCss(),
                 'js'    => $this->getJs(),
@@ -286,15 +319,12 @@ class Application
      * @param string $template file name in template dir.
      * @param mixed[] array to extract before including the template.
      */
-    private function renderHtml($template, array $data = [])
+    private function renderHtml(ResponseInterface $response, $template, array $data = [])
     {
+        ob_start();
         render_template($this->getTemplatesDir() . "/$template", $data);
-    }
+        $body = ob_get_clean();
 
-    private function disableOutputBuffering()
-    {
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        return new HtmlResponse($body);
     }
 }
