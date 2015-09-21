@@ -19,7 +19,7 @@ class Controller
     public function __construct(\Slim\App $app)
     {
         $this->app = $app;
-        $this->cache = new Cache();
+        $this->cache = new Cache($app->settings['cache']);
     }
 
     /// @return ResponseInterface

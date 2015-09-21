@@ -7,9 +7,10 @@ class Cache
     /// @var string where to store the data.
     private $dir;
 
-    public function __construct()
+    /// @param string $dir @see $this->dir
+    public function __construct($dir)
     {
-        $this->dir = posix_getpwuid(posix_getuid())['dir'] . '/.cache/woland';
+        $this->dir = $dir;
         $this->setupDir($this->dir);
     }
 

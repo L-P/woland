@@ -19,3 +19,18 @@ How?
 ----
 Woland is written for PHP ≥ 5.5 using the [Slim](http://www.slimframework.com/)
 micro-framework.
+
+The configuration for Woland must be placed in `~/.config/woland.json`, here is
+a sample: 
+
+```json
+{
+    "cache": "/home/azazello/.cache/woland",
+    "favorites": {
+        "music": "/path/to/music",
+        "archives": "/path/to/archives"
+    }
+}
+```
+
+Favorites will be the only accessible directories.

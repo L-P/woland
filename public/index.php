@@ -26,7 +26,7 @@ $controller = new Controller($app);
 $app->getContainer()['view'] = function ($c) use ($settings) {
     $view = new \Slim\Views\Twig(
         dirname(__DIR__) . '/src/templates',
-        ['cache' => $settings['templateCachePath']]
+        ['cache' => $settings['cache'] . '/templates']
     );
 
     $view->addExtension(new \Slim\Views\TwigExtension(
