@@ -7,6 +7,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Zend\Diactoros\Stream;
 use Zend\Diactoros\Response\HtmlResponse;
+use Slim\Middleware\HttpBasicAuthentication;
 
 class Controller
 {
@@ -19,7 +20,22 @@ class Controller
     public function __construct(\Slim\App $app)
     {
         $this->app = $app;
+
+        assert('is_string($app->settings["cache"])');
         $this->cache = new Cache($app->settings['cache']);
+
+        $users  = array_get($app->settings, 'users', []);
+        $realm  = array_get($app->settings, 'realm', 'Woland');
+        $secure = array_get($app->settings, 'secure', true);
+        $authenticator = new PasswordAuthenticator($users);
+
+        assert('is_array($users) && is_string($realm) && is_bool($secure)');
+
+        if (count($users) > 0) {
+            $app->add(new HttpBasicAuthentication(compact([
+                'realm', 'secure', 'authenticator'
+            ])));
+        }
     }
 
     /// @return ResponseInterface
@@ -121,8 +137,11 @@ class Controller
     }
 
     /// @return ResponseInterface
-    private function renderPlaylist(ResponseInterface $response, RequestedPath $path, UriInterface $uri)
-    {
+    private function renderPlaylist(
+        ResponseInterface $response,
+        RequestedPath $path,
+        UriInterface $uri
+    ) {
         $files = $this->getFilesIterator($path);
         $baseUrl = sprintf(
             '%s://%s:%d',
@@ -137,7 +156,7 @@ class Controller
             if (strpos(get_mime($file->getPathname()), 'audio/') === 0) {
                 $name = substr($file->getBasename(), 0, -strlen($file->getExtension()) - 1);
                 $lines[] = "#EXTINF:0,$name";
-                $lines[] = "$baseUrl/" . $twigExt->fileToUri($file, $path);
+                $lines[] = $baseUrl . $twigExt->fileToUri($file, $path);
             }
         }
 

@@ -23,7 +23,8 @@
         "slim/slim": "^3.0@RC",
         "slim/twig-view": "^2.0",
         "twbs/bootstrap": "~3.3",
-        "zendframework/zend-diactoros": "^1.1"
+        "zendframework/zend-diactoros": "^1.1",
+        "tuupola/slim-basic-auth": "2.x-dev#0d5fddfe3d2f3ddfd257cdebd0b8fa7bb3ba129f"
     },
     "autoload": {
         "files": [
