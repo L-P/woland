@@ -25,6 +25,7 @@
     </div>
 </nav>
 
+{% if breadcrumbs %}
 <ol class="breadcrumb">
     <li><a href="/{{ path.favoriteName }}/">{{ path.favoriteName }}</a></li>
     {% for crumb in breadcrumbs %}
@@ -35,3 +36,4 @@
         {% endif %}
     {% endfor %}
 </ol>
+{% endif %}
