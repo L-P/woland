@@ -5,6 +5,9 @@ What?
 -----
 Woland is a read-only file browser accessible through HTTP.
 
+<a href="http://i.imgur.com/Moo8P8k.jpg"><img width="350" src="http://i.imgur.com/Moo8P8k.jpg" alt="Screenshot 1" /></a>
+<a href="http://i.imgur.com/JS3N48v.jpg"><img width="350" src="http://i.imgur.com/JS3N48v.jpg" alt="Screenshot 2" /></a>
+
 Why?
 ----
 When I replaced ownCloud with [Radicale](http://radicale.org/) and
