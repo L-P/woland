@@ -55,7 +55,7 @@ class TwigExtension extends \Twig_Extension
             strpos($file->getPathname(), $path->favoritePathname . '/') !== 0
             && $file->getPathname() !== $path->favoritePathname
         ) {
-            throw new \RuntimeException('Unknown path.');
+            throw new \RuntimeException("Unknown path `$file`.");
         }
 
         $relative = substr($file->getPathname(), strlen($path->favoritePathname));

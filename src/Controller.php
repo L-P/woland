@@ -210,8 +210,26 @@ class Controller
             'files'        => $files,
             'totalSize'    => $totalSize,
             'path'         => $path,
+            'breadcrumbs'  => $this->getBreadCrumbs($path),
             'sidebar'      => new Sidebar($path, $this->app->settings['favorites']),
         ]);
+    }
+
+    /// @return SplFileInfo[]
+    private function getBreadCrumbs(RequestedPath $path)
+    {
+        if ($path->isNone()) {
+            return [];
+        }
+
+        $ret = [];
+        $last = $path->info->getRealPath();
+        while ($last !== $path->favoritePathname) {
+            $ret[] = new \SplFileInfo($last);
+            $last = dirname($last);
+        }
+
+        return array_reverse($ret);
     }
 
     /**

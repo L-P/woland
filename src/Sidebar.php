@@ -26,37 +26,6 @@ class Sidebar
     }
 
     /**
-     * Return the subtree of the current dir inside the tree of parent folders.
-     *
-     * @return mixed[] [SplFileInfo, [...]]
-     */
-    public function getPartialTree()
-    {
-        if ($this->path->isNone()) {
-            // Better to throw than displaying the root.
-            throw new \RuntimeException('No valid path for tree.');
-        }
-
-        // Current dir subdirs at depth 3.
-        $curPath = $this->path->info->getPathname();
-        $ret = [
-            new \SplFileInfo($curPath),
-            $this->pathnameToNestedArray($curPath, 3)
-        ];
-
-        // All parent dirs with no depth.
-        while ($curPath !== $this->path->favoritePathname) {
-            $curPath = dirname($curPath);
-            $ret = [
-                new \SplFileInfo($curPath),
-                [$ret]
-            ];
-        }
-
-        return [$ret];
-    }
-
-    /**
      * @param string $pathname
      * @return mixed[] [SplFileInfo, [...]]
      */
