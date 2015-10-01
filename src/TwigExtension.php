@@ -14,11 +14,11 @@ class TwigExtension extends \Twig_Extension
         $safe = ['is_safe' => ['html']];
 
         return [
-            new \Twig_SimpleFunction('fileToLink',    [$this, 'fileToLink'], $safe),
+            new \Twig_SimpleFunction('fileToLink', [$this, 'fileToLink'], $safe),
             new \Twig_SimpleFunction('displayNestedArray', [$this, 'displayNestedArray'], $safe),
 
-            new \Twig_SimpleFunction('fileToUri',     [$this, 'fileToUri']),
-            new \Twig_SimpleFunction('albumArtUri',   [$this, 'albumArtUri']),
+            new \Twig_SimpleFunction('fileToUri', [$this, 'fileToUri']),
+            new \Twig_SimpleFunction('albumArtUri', [$this, 'albumArtUri']),
         ];
     }
 
@@ -86,8 +86,9 @@ class TwigExtension extends \Twig_Extension
     {
         $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
-        if ($bytes === 0)
+        if ($bytes === 0) {
             return '0 B';
+        }
 
         $index = min(count($units) -1, floor(log($bytes, 1024)));
         $size = round($bytes / pow(1024, $index), 2);

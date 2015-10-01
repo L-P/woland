@@ -62,8 +62,9 @@ class Sidebar
      */
     private function pathnameToNestedArray($pathname, $maxDepth, $depth = 0)
     {
-        if ($depth >= $maxDepth)
+        if ($depth >= $maxDepth) {
             return [];
+        }
 
         $ret = [];
 

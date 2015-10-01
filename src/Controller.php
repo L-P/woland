@@ -221,12 +221,12 @@ class Controller
     private function getMainView(RequestedPath $path, $typeMajority)
     {
         switch (true) {
-        case $path->isNone():
-            return 'main/none.html';
-        case $typeMajority === 'image':
-            return 'main/gallery.html';
-        default:
-            return 'main/list.html';
+            case $path->isNone():
+                return 'main/none.html';
+            case $typeMajority === 'image':
+                return 'main/gallery.html';
+            default:
+                return 'main/list.html';
         }
     }
 
