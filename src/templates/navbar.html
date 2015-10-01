@@ -24,3 +24,14 @@
         </ul>
     </div>
 </nav>
+
+<ol class="breadcrumb">
+    <li><a href="/{{ path.favoriteName }}/">{{ path.favoriteName }}</a></li>
+    {% for crumb in breadcrumbs %}
+        {% if path.info.getRealPath() == crumb.getRealPath() %}
+            <li class="active">{{ fileToLink(crumb, path) }}</li>
+        {% else %}
+            <li>{{ fileToLink(crumb, path) }}</li>
+        {% endif %}
+    {% endfor %}
+</ol>

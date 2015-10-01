@@ -6,6 +6,7 @@ use Woland\Controller;
 require_once __DIR__ . '/../vendor/autoload.php';
 
 error_reporting(-1);
+set_time_limit(1);
 
 // HACK: get routes to work when using the PHP dev server.
 if (php_sapi_name() === 'cli-server') {
