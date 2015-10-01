@@ -10,8 +10,6 @@ error_reporting(-1);
 // HACK: get routes to work when using the PHP dev server.
 if (php_sapi_name() === 'cli-server') {
     $_SERVER['SCRIPT_NAME'] = '/index.php';
-    $_SERVER['REQUEST_URI'] = '/index.php/' . $_SERVER['REQUEST_URI'];
-    $_SERVER['PHP_SELF']    = '/index.php/' . $_SERVER['PHP_SELF'];
 }
 
 // Load config.

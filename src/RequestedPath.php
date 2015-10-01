@@ -41,7 +41,7 @@ class RequestedPath
 
         if ($favoriteName === null) {
             return new self();
-        } else if (!array_key_exists($favoriteName, $favorites)) {
+        } elseif (!array_key_exists($favoriteName, $favorites)) {
             throw new \RuntimeException("Unknown favorite `$favoriteName`.");
         }
 
