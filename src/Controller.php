@@ -89,6 +89,10 @@ class Controller
         }
 
         if (!$path->isNone() && !$path->info->isDir()) {
+            if (!$path->info->isReadable()) {
+                throw new \RuntimeException("Unable to read file `{$path->info->getRealpath()}`.");
+            }
+
             if (array_get($request->getQueryParams(), 'thumbnail') !== null) {
                 return $this->renderThumbnail($response, $path);
             } else {
