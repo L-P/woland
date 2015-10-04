@@ -89,6 +89,10 @@ class Controller
         }
 
         if (!$path->isNone() && !$path->info->isDir()) {
+            if (!$path->info->isReadable()) {
+                throw new \RuntimeException("Unable to read file `{$path->info->getRealpath()}`.");
+            }
+
             if (array_get($request->getQueryParams(), 'thumbnail') !== null) {
                 return $this->renderThumbnail($response, $path);
             } else {
@@ -255,6 +259,10 @@ class Controller
     {
         $mimes = [];
         foreach ($files as $file) {
+            if (!$file->isReadable()) {
+                continue;
+            }
+
             $mime = get_mime($file->getPathname());
             $mimes[$mime] = array_get($mimes, $mime, 0) + 1;
         }

@@ -20,8 +20,11 @@ $confPath = "$home/.config/woland.json";
 $settings = json_decode(file_get_contents($confPath), true);
 
 $app = new App(compact('settings'));
-unset($app->getContainer()['errorHandler']);
 $controller = new Controller($app);
+
+if (php_sapi_name() !== 'cli-server') {
+    unset($app->getContainer()['errorHandler']);
+}
 
 // Setup Twig.
 $app->getContainer()['view'] = function ($c) use ($settings) {
