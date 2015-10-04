@@ -19,6 +19,7 @@ $confPath = "$home/.config/woland.json";
 $settings = json_decode(file_get_contents($confPath), true);
 
 $app = new App(compact('settings'));
+unset($app->getContainer()['errorHandler']);
 $controller = new Controller($app);
 
 // Setup Twig.
