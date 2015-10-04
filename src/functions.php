@@ -65,6 +65,8 @@ function get_mime($pathname)
     ];
 
     $mime = finfo_file($finfo, $pathname);
+    assert('$mime !== false');
+
     return array_get($translate, $mime, $mime);
 }
 
