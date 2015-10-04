@@ -259,6 +259,10 @@ class Controller
     {
         $mimes = [];
         foreach ($files as $file) {
+            if (!$file->isReadable()) {
+                continue;
+            }
+
             $mime = get_mime($file->getPathname());
             $mimes[$mime] = array_get($mimes, $mime, 0) + 1;
         }
