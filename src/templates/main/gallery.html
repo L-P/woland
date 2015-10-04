@@ -5,7 +5,11 @@
     <div class="panel-body gallery">
         {% for file in files %}
             <a href="{{ fileToUri(file, path) }}" class="thumbnail">
-                <img src="{{ fileToUri(file, path) }}?thumbnail" alt="picture" />
+                <img
+                    src="{{ fileToUri(file, path) }}?thumbnail"
+                    title="{{ file.getBasename() }} ({{ file.getSize()|bytes }})"
+                    alt="{{ file.getBasename() }} ({{ file.getSize()|bytes }})"
+                />
             </a>
         {% endfor %}
 
