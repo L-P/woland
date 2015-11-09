@@ -12,6 +12,16 @@
         </div>
     </div>
 {% else %}
+    {% set partial = sidebar.getPartialTree() %}
+    {% if (not path.isFavoriteRoot()) and partial %}
+        <div class="panel panel-default">
+            <div class="panel-heading">{{ path.relative }}</div>
+            <div class="panel-body">
+                {{ displayNestedArray(partial, path) }}
+            </div>
+        </div>
+    {% endif %}
+
     {% if typeMajority == 'audio' %}
         <div class="panel panel-default">
             <div class="panel-heading">Album</div>

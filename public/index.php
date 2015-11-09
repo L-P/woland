@@ -14,37 +14,13 @@ if (php_sapi_name() === 'cli-server') {
     set_time_limit(1);
 }
 
-// Load config.
-$home = posix_getpwuid(posix_getuid())['dir'];
-$confPath = "$home/.config/woland.json";
-$settings = json_decode(file_get_contents($confPath), true);
-
+$settings = get_settings();
 $app = new App(compact('settings'));
 $controller = new Controller($app);
-
-if (php_sapi_name() !== 'cli-server') {
-    unset($app->getContainer()['errorHandler']);
-}
+$app->settings['displayErrorDetails'] = $settings['debug'];
 
 // Setup Twig.
-$app->getContainer()['view'] = function ($c) use ($settings) {
-    $view = new \Slim\Views\Twig(
-        dirname(__DIR__) . '/src/templates',
-        ['cache' => $settings['cache'] . '/templates']
-    );
-
-    $view->addExtension(new \Slim\Views\TwigExtension(
-        $c['router'],
-        $c['request']->getUri()
-    ));
-
-    $view->addExtension(new \Woland\TwigExtension());
-    $view->getEnvironment()->getExtension('core')
-        ->setDateFormat('Y-m-d H:i:s P')
-    ;
-
-    return $view;
-};
+$app->getContainer()['view'] = get_twig_creator($settings);
 
 // Setup routes.
 $app->get('/_/{type}/{asset}', [$controller, 'serveAsset']);

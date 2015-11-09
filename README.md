@@ -33,6 +33,7 @@ a sample: 
         "music": "/path/to/music",
         "archives": "/path/to/archives"
     },
+    "debug": false,
     "secure": true,
     "realm": "Woland",
     "users": {
@@ -43,8 +44,8 @@ a sample: 
 
 Favorites will be the only accessible directories.
 
-If you want to use HTTP basic authentication, you must define some users. This
-won't work using plain HTTP unless you set `secure` to `false`.
+If you want to use HTTP basic authentication, you must define some users.
+This won't work using plain HTTP unless you set `secure` to `false`.
 
 Users passwords must be hashed using `password_hash`. You can use the following
 command to quickly get a password hash:
