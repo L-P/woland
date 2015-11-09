@@ -17,11 +17,7 @@ if (php_sapi_name() === 'cli-server') {
 $settings = get_settings();
 $app = new App(compact('settings'));
 $controller = new Controller($app);
-
-// Disable full trace in prod.
-if ($settings['debug'] === false) {
-    unset($app->getContainer()['errorHandler']);
-}
+$app->settings['displayErrorDetails'] = $settings['debug'];
 
 // Setup Twig.
 $app->getContainer()['view'] = get_twig_creator($settings);
