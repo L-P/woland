@@ -24,14 +24,16 @@ class Controller
         assert('is_string($app->settings["cache"])');
         $this->cache = new Cache($app->settings['cache']);
 
-        $users  = array_get($app->settings, 'users', []);
-        $realm  = array_get($app->settings, 'realm', 'Woland');
-        $secure = array_get($app->settings, 'secure', true);
-        $authenticator = new PasswordAuthenticator($users);
-
-        assert('is_array($users) && is_string($realm) && is_bool($secure)');
+        $users = array_get($app->settings, 'users', []);
+        assert('is_array($users)');
 
         if (count($users) > 0) {
+            $realm  = array_get($app->settings, 'realm', 'Woland');
+            $secure = array_get($app->settings, 'secure', true);
+            assert('is_string($realm) && is_bool($secure)');
+
+            $authenticator = new PasswordAuthenticator($users);
+
             $app->add(new HttpBasicAuthentication(compact([
                 'realm', 'secure', 'authenticator'
             ])));
