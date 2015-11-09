@@ -121,3 +121,64 @@ function iterator_reduce(\Iterator $iterator, callable $func, $initial = null)
     }
     return $carry;
 }
+
+/**
+ * @return mixed[] @see get_default_settings
+ */
+function get_settings()
+{
+    $home = posix_getpwuid(posix_getuid())['dir'];
+
+    $confPath = "$home/.config/woland.json";
+    if (!file_exists($confPath)) {
+        throw new \RuntimeException("No configuration found at `$confPath`.");
+    }
+
+    $userSettings = json_decode(file_get_contents($confPath), true);
+    if ($userSettings === false) {
+        throw new \RuntimeException("Invalid JSON found in `$confPath`.");
+    }
+
+    return $userSettings + get_default_settings();
+}
+
+/**
+ * @return mixed[]
+ */
+function get_default_settings()
+{
+    return [
+        'debug'     => php_sapi_name() === 'cli-server',
+        'favorites' => [],
+        'realm'     => 'Woland',
+        'secure'    => true,
+        'users'     => [],
+    ];
+}
+
+/**
+ * @param mixed[] $settings @see get_default_settings
+ * @return callable f($container) -> Twig
+ */
+function get_twig_creator(array $settings)
+{
+    return function ($c) use ($settings) {
+        $cache = $settings['debug'] ? false : $settings['cache'] . '/templates';
+        $view = new \Slim\Views\Twig(
+            dirname(__DIR__) . '/src/templates',
+            compact('cache')
+        );
+
+        $view->addExtension(new \Slim\Views\TwigExtension(
+            $c['router'],
+            $c['request']->getUri()
+        ));
+
+        $view->addExtension(new \Woland\TwigExtension());
+        $view->getEnvironment()->getExtension('core')
+            ->setDateFormat('Y-m-d H:i:s P')
+        ;
+
+        return $view;
+    };
+}

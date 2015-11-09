@@ -19,25 +19,19 @@ class Controller
 
     public function __construct(\Slim\App $app)
     {
-        $this->app = $app;
-
-        assert('is_string($app->settings["cache"])');
         $this->cache = new Cache($app->settings['cache']);
 
-        $users = array_get($app->settings, 'users', []);
-        assert('is_array($users)');
+        if (count($app->settings['users']) > 0) {
+            $authenticator = new PasswordAuthenticator($app->settings['users']);
 
-        if (count($users) > 0) {
-            $realm  = array_get($app->settings, 'realm', 'Woland');
-            $secure = array_get($app->settings, 'secure', true);
-            assert('is_string($realm) && is_bool($secure)');
-
-            $authenticator = new PasswordAuthenticator($users);
-
-            $app->add(new HttpBasicAuthentication(compact([
-                'realm', 'secure', 'authenticator'
-            ])));
+            $app->add(new HttpBasicAuthentication([
+                'authenticator' => $authenticator,
+                'realm'  => $app->settings['realm'],
+                'secure' => $app->settings['secure'],
+            ]));
         }
+
+        $this->app = $app;
     }
 
     /// @return ResponseInterface
