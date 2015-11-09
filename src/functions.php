@@ -105,8 +105,9 @@ function image_autorotate(\Imagick $image)
         case \Imagick::ORIENTATION_LEFTBOTTOM:
             $image->rotateImage("#000", -90);
             break;
-        default: // Invalid orientation
-            break;
+        default:
+            // Invalid orientation
+            return;
     }
 
     $image->setImageOrientation(\Imagick::ORIENTATION_TOPLEFT);
