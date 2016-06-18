@@ -149,6 +149,7 @@ function get_settings()
 function get_default_settings()
 {
     return [
+        'cache'     => '/tmp/woland',
         'debug'     => php_sapi_name() === 'cli-server',
         'favorites' => [],
         'realm'     => 'Woland',
