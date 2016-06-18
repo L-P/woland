@@ -19,19 +19,9 @@ class Controller
 
     public function __construct(\Slim\App $app)
     {
-        $this->cache = new Cache($app->settings['cache']);
-
-        if (count($app->settings['users']) > 0) {
-            $authenticator = new PasswordAuthenticator($app->settings['users']);
-
-            $app->add(new HttpBasicAuthentication([
-                'authenticator' => $authenticator,
-                'realm'  => $app->settings['realm'],
-                'secure' => $app->settings['secure'],
-            ]));
-        }
-
         $this->app = $app;
+        $this->cache = new Cache($this->getSetting('cache'));
+        $this->setupAuthenticator();
     }
 
     /// @return ResponseInterface
@@ -77,7 +67,7 @@ class Controller
         try {
             $path = RequestedPath::fromRequest(
                 $request,
-                $this->app->settings['favorites']
+                $this->app->getContainer()->get('settings')['favorites']
             );
         } catch (\RuntimeException $e) {
             http_response_code(404);
@@ -206,12 +196,12 @@ class Controller
             ],
 
             'typeMajority' => $typeMajority,
-            'favorites'    => array_keys($this->app->settings['favorites']),
+            'favorites'    => array_keys($this->getSetting('favorites')),
             'files'        => $files,
             'totalSize'    => $totalSize,
             'path'         => $path,
             'breadcrumbs'  => $this->getBreadCrumbs($path),
-            'sidebar'      => new Sidebar($path, $this->app->settings['favorites']),
+            'sidebar'      => new Sidebar($path, $this->getSetting('favorites')),
         ]);
     }
 
@@ -343,6 +333,28 @@ class Controller
      */
     private function renderHtml(ResponseInterface $response, $template, array $data = [])
     {
-        return $this->app->view->render($response, $template, $data);
+        return $this->app->getContainer()->get('view')->render($response, $template, $data);
+    }
+
+    /**
+     * @param string $key setting name
+     * @return mixed
+     */
+    private function getSetting($key)
+    {
+        return $this->app->getContainer()->get('settings')[$key];
+    }
+
+    private function setupAuthenticator()
+    {
+        if (count($this->getSetting('users')) > 0) {
+            $authenticator = new PasswordAuthenticator($this->getSetting('users'));
+
+            $this->app->add(new HttpBasicAuthentication([
+                'authenticator' => $authenticator,
+                'realm'  => $this->getSetting('realm'),
+                'secure' => $this->getSetting('secure'),
+            ]));
+        }
     }
 }
